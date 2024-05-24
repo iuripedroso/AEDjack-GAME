@@ -1,0 +1,231 @@
+#include <iostream>
+#include <cstdlib>
+#include <ctime>
+#include <windows.h>
+#include "pilha.h"
+
+using namespace std;
+
+string nome;
+float Dinheiro;
+
+void jogo();
+string EmbaralhaCartasNaipes(string Cartas[], string Naipes[], int &Pontos);
+void AdicionarCartasMesa(no *&CartasMesa, string Cartas[], string Naipes[], int &Pontos, int &PontosMesa, int aux, string &cartaRemovida);
+void AdicionaCartaMao(no *&CartasMao, string Cartas[], string Naipes[], int &Pontos, int &PontosMao);
+int CalculaPontos(int Pontos);
+void sobre();
+
+void inicio(){
+    system("cls");
+    cout << "Insira seu nome de jogador: ";
+    cin >> nome;
+
+    system("cls");
+    cout << "        --- AEDjack Game ---" << endl << endl;
+    cout << "Ola " << nome << "! insira seu saldo inicial: ";
+    cin >> Dinheiro;
+
+    Sleep(1500);
+}
+
+int main() {
+    inicio();
+
+    int n;
+    bool sair = false;
+    while (!sair) {
+        system("cls");
+        cout << "        --- AEDjack Game ---" << endl;
+        cout << "Menu de Jogo             saldo: " << Dinheiro << endl << endl;
+        cout << "(1) jogar blackjack " << endl;
+        cout << "(2) sobre" << endl;
+        cout << "(3) sair" << endl;
+
+        cin >> n;
+        switch(n){
+            case 1: jogo(); break;
+            case 2: sobre(); break;
+            case 3: sair = true; break;
+            default: cout << "Opcao invalida!" << endl; Sleep(2000); break;
+        }
+    }
+
+    return 0;
+}
+
+void sobre(){
+    system("cls");
+    std::cout << "**************************          O objetivo do Blackjack e obter uma" << std::endl;
+    std::cout << "*                        *          mao de cartas que some exatamente 21" << std::endl;
+    std::cout << "*       BLACKJACK        *          pontos, ou o mais proximo possivel," << std::endl;
+    std::cout << "*                        *          sem ultrapassar esse valor." << std::endl;
+    std::cout << "*     +-----------+      *" << std::endl;
+    std::cout << "*     | A         |      *          A combinacao de um As (A) e um Rei (K)" << std::endl;
+    std::cout << "*     |           |      *          eh uma das formas de conseguir o valor 21," << std::endl;
+    std::cout << "*     |     *     |      *          conhecido como Blackjack." << std::endl;
+    std::cout << "*     |           |      *" << std::endl;
+    std::cout << "*     |         A |      *" << std::endl;
+    std::cout << "*     +-----------+      *" << std::endl;
+    std::cout << "*                        *" << std::endl;
+    std::cout << "*      21 = BLACKJACK    *" << std::endl;
+    std::cout << "*                        *" << std::endl;
+    std::cout << "**************************" << std::endl;
+    system("pause");
+}
+
+void jogo() {
+    srand(time(0));
+
+    string Cartas[] = {"A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"};
+    string Naipes[] = {"Ouro", "Espada", "Copa", "Paus"};
+    string cartaRemovida;
+
+    no *CartasMesa = inicializaPilha();
+    no *CartasMao = inicializaPilha();
+    int Pontos = 0;
+    int PontosMesa = 0;
+    int PontosMao = 0;
+    int EscolhaJogador;
+
+    bool Passar = false;
+    bool ValidaAposta = false;
+
+    float Aposta = 0;
+
+    AdicionarCartasMesa(CartasMesa, Cartas, Naipes, Pontos, PontosMesa, 0, cartaRemovida);
+    AdicionaCartaMao(CartasMao, Cartas, Naipes, Pontos, PontosMao);
+    AdicionaCartaMao(CartasMao, Cartas, Naipes, Pontos, PontosMao);
+
+    while (!Passar) {
+        system("cls");
+
+        cout << "        --- AEDjack Game ---" << endl << endl;
+        cout << "Cartas da Mesa: " << endl;
+        imprimePilha(CartasMesa);
+        cout << "Pontos da Mesa = " << PontosMesa << endl;
+        cout << "____________________________" << endl;
+
+        cout << "Cartas na Sua mao:" << endl;
+        imprimePilha(CartasMao);
+        cout << "Pontos na Sua mao = " << PontosMao << endl;
+        cout << "____________________________" << endl;
+
+        if (PontosMao > 21) {
+            cout << "Voce estourou! Pontos na mao = " << PontosMao << endl;
+            Passar = true;
+            break;
+        }
+
+        cout << "Saldo Atual: " << Dinheiro << endl;
+        cout << "Voce deseja: " << endl;
+        cout << "1. Apostar" << endl;
+        cout << "2. Pedir mais uma carta" << endl;
+        cout << "3. Virar a Carta da Mesa" << endl;                                  
+        cin >> EscolhaJogador;
+
+        if (EscolhaJogador == 1) {
+            system("cls");
+            ValidaAposta = false;
+            while (!ValidaAposta) {
+                cout << "Saldo Atual: " << Dinheiro << endl;
+                cout << "Insira o valor da aposta: ";
+                cin >> Aposta;
+                if (Aposta <= 0 || Aposta > Dinheiro) {
+                    cout << "Aposta inválida! Tente novamente." << endl;
+                    Sleep(2000);
+                    system("cls");
+                } else {
+                    Dinheiro -= Aposta;
+                    ValidaAposta = true;
+                }
+            }
+        } else if (EscolhaJogador == 2) {
+            AdicionaCartaMao(CartasMao, Cartas, Naipes, Pontos, PontosMao);
+        } else if (EscolhaJogador == 3) {
+            Passar = true;
+        } else {
+            cout << "Opção inválida! Tente novamente." << endl;
+            Sleep(2000);
+        }
+    }
+
+    if (EscolhaJogador == 3) {
+        system("cls");
+        AdicionarCartasMesa(CartasMesa, Cartas, Naipes, Pontos, PontosMesa, 1, cartaRemovida);
+
+        cout << "        --- AEDjack Game ---" << endl << endl;
+        cout << "Cartas da Mesa:" << endl;
+        imprimePilha(CartasMesa);
+        cout << "Pontos da Mesa = " << PontosMesa << endl;
+        cout << "____________________________" << endl;
+
+        cout << "Cartas na Sua mao:" << endl;
+        imprimePilha(CartasMao);
+        cout << "Pontos na Sua mao = " << PontosMao << endl;
+        cout << "____________________________" << endl;
+
+        Sleep(3000);
+
+        if (PontosMesa > 21) {
+            cout << "A mesa estourou! Voce ganhou!" << endl;
+            Dinheiro += 2 * Aposta;
+        } else if (PontosMao > 21) {
+            cout << "Voce estourou! Mesa ganhou." << endl;
+        } else if (PontosMesa > PontosMao) {
+            cout << "Mesa ganhou." << endl;
+        } else if (PontosMao > PontosMesa) {
+            cout << "Voce ganhou!" << endl;
+            Dinheiro += 2 * Aposta;
+        } else {
+            cout << "Empate!" << endl;
+            Dinheiro += Aposta;
+        }
+
+        cout << "Dinheiro restante: " << Dinheiro << endl;
+        system("pause");
+    }
+}
+
+string EmbaralhaCartasNaipes(string Cartas[], string Naipes[], int &Pontos) {
+    int NumeroCartaAleatoria = rand() % 13;
+    int NumeroNaipeAleatorio = rand() % 4;
+    Pontos = NumeroCartaAleatoria;
+    return Cartas[NumeroCartaAleatoria] + " de " + Naipes[NumeroNaipeAleatorio];
+}
+
+void AdicionarCartasMesa(no *&CartasMesa, string Cartas[], string Naipes[], int &Pontos, int &PontosMesa, int aux, string &cartaRemovida) {
+    if (aux == 0) {
+        CartasMesa = PUSH(CartasMesa, EmbaralhaCartasNaipes(Cartas, Naipes, Pontos));
+        PontosMesa += CalculaPontos(Pontos);
+        CartasMesa = PUSH(CartasMesa, "Carta Virada");
+    } else {
+        CartasMesa = POP(CartasMesa, &cartaRemovida);
+        CartasMesa = PUSH(CartasMesa, EmbaralhaCartasNaipes(Cartas, Naipes, Pontos));
+        PontosMesa += CalculaPontos(Pontos);
+    }
+}
+
+void AdicionaCartaMao(no *&CartasMao, string Cartas[], string Naipes[], int &Pontos, int &PontosMao) {
+    CartasMao = PUSH(CartasMao, EmbaralhaCartasNaipes(Cartas, Naipes, Pontos));
+    PontosMao += CalculaPontos(Pontos);
+}
+
+int CalculaPontos(int Pontos) {
+    switch (Pontos) {
+        case 0: return 11; 
+        case 1: return 2;
+        case 2: return 3;
+        case 3: return 4;
+        case 4: return 5;
+        case 5: return 6;
+        case 6: return 7;
+        case 7: return 8;
+        case 8: return 9;
+        case 9: return 10;
+        case 10: return 10;
+        case 11: return 10;
+        case 12: return 10;
+        default: return 0;
+    }
+}
